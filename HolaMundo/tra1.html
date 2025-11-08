@@ -1,0 +1,89 @@
+<!-- Pantalla "ABC of bleeding control" · estilo minimal moderno con Material Symbols -->
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>ABC of bleeding control</title>
+    <link rel="stylesheet" href="style.css"/>
+
+    <!-- Material Symbols (Google Icons) -->
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />   
+</head>
+  <body>
+   <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.92/build/spline-viewer.js"></script>
+<spline-viewer url="https://prod.spline.design/GI4C-E-MV0RERVEJ/scene.splinecode"></spline-viewer> <div class="stage">
+      <div class="phone">
+        <div class="notch" aria-hidden="true"></div>
+
+        <header class="status">
+          <span class="time">8:30</span>
+          <div class="status__icons" aria-hidden="true">
+            <span class="ms">signal_cellular_alt</span>
+            <span class="ms">wifi</span>
+            <span class="ms">battery_full</span>
+          </div>
+        </header>
+
+        <main class="app" role="main">
+          <div class="hero">
+            <h1 class="hero__title">ABC of<br/>bleeding control</h1>
+            <div class="progress" aria-label="progress">
+              <span id="count">08</span>/<span id="total">15</span>
+            </div>
+          </div>
+
+          <section class="cards" aria-label="steps list">
+            <article class="card card--primary" data-letter="A">
+              <div class="card__icon">
+                <span class="ms">emergency_share</span>
+              </div>
+              <div class="card__content">
+                <h2 class="card__title">Alert 911</h2>
+                <p class="card__desc">It is a priority to call emergency services personnel onto the scene.</p>
+              </div>
+            </article>
+
+            <article class="card" data-letter="B">
+              <div class="card__icon">
+                <span class="ms">bloodtype</span>
+              </div>
+              <div class="card__content">
+                <h2 class="card__title">Bleeding</h2>
+                <p class="card__desc">This section will explain how to identify life threatening bleeding.</p>
+              </div>
+            </article>
+
+            <article class="card" data-letter="C">
+              <div class="card__icon">
+                <span class="ms">pan_tool_alt</span>
+              </div>
+              <div class="card__content">
+                <h2 class="card__title">Compress</h2>
+                <p class="card__desc">Control bleeding through pressure, packing and the use of tourniquets.</p>
+              </div>
+            </article>
+          </section>
+        </main>
+
+        <nav class="toolbar" aria-label="navigation">
+          <button class="btn btn--ghost" id="prev">
+            <span class="ms">chevron_left</span>
+            <span>Prev</span>
+          </button>
+
+          <button class="fab" aria-label="menu">
+            <span class="ms">menu</span>
+          </button>
+
+          <button class="btn btn--cta" id="next">
+            <span>Next</span>
+            <span class="ms">chevron_right</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
