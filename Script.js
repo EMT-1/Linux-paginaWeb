@@ -75,7 +75,12 @@ class AnimeApp {
                 url += `&${filters.join('&')}`;
             }
 
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
             
             if (!response.ok) {
                 throw new Error('Error en la respuesta de la API');
