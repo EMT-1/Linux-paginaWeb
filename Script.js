@@ -216,3 +216,4 @@ class AnimeApp {
 document.addEventListener('DOMContentLoaded', () => {
     new AnimeApp();
 });
+// prueba de actualización
