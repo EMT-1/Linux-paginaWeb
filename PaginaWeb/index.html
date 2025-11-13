@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎌 Anime Explorer</h1>
+            <p>Descubre información sobre tus animes favoritos</p>
+        </header>
+
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="Buscar anime...">
+            <button id="searchBtn">Buscar</button>
+        </div>
+
+        <div class="filters">
+            <select id="typeFilter">
+                <option value="">Todos los tipos</option>
+                <option value="tv">TV</option>
+                <option value="movie">Película</option>
+                <option value="ova">OVA</option>
+                <option value="special">Especial</option>
+            </select>
+            
+            <select id="statusFilter">
+                <option value="">Todos los estados</option>
+                <option value="airing">En emisión</option>
+                <option value="complete">Completado</option>
+                <option value="upcoming">Próximamente</option>
+            </select>
+        </div>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Cargando animes...</p>
+        </div>
+
+        <div id="animeGrid" class="anime-grid">
+            <!-- Los animes se cargarán aquí -->
+        </div>
+
+        <div id="errorMessage" class="error hidden">
+            <p>❌ Error al cargar los datos. Intenta nuevamente.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
