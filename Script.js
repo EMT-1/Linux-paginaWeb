@@ -11,52 +11,21 @@ class AnimeApp {
         this.loadTopAnime();
     }
 
-    initializeElements() {
-        this.animeGrid = document.getElementById('animeGrid');
-        this.searchInput = document.getElementById('searchInput');
-        this.searchBtn = document.getElementById('searchBtn');
-        this.typeFilter = document.getElementById('typeFilter');
-        this.statusFilter = document.getElementById('statusFilter');
-        this.loading = document.getElementById('loading');
-        this.errorMessage = document.getElementById('errorMessage');
+    // ... initializeElements y attachEventListeners sin cambios ...
+
+    // Mapea los valores de tus <select> a los que espera AniList
+    mapType(type) {
+        const map = { 'tv': 'TV', 'movie': 'MOVIE', 'ova': 'OVA', 'special': 'SPECIAL' };
+        return map[type] || null;
     }
 
-    attachEventListeners() {
-        this.searchBtn.addEventListener('click', () => this.handleSearch());
-        this.searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.handleSearch();
-        });
-        
-        this.typeFilter.addEventListener('change', () => this.handleFilterChange());
-        this.statusFilter.addEventListener('change', () => this.handleFilterChange());
-        
-        // Carga más animes al hacer scroll
-        window.addEventListener('scroll', () => this.handleScroll());
-    }
-
-    handleSearch() {
-        this.currentSearch = this.searchInput.value.trim();
-        this.currentPage = 1;
-        this.animeGrid.innerHTML = '';
-        
-        if (this.currentSearch) {
-            this.searchAnime();
-        } else {
-            this.loadTopAnime();
-        }
-    }
-
-    handleFilterChange() {
-        this.currentType = this.typeFilter.value;
-        this.currentStatus = this.statusFilter.value;
-        this.currentPage = 1;
-        this.animeGrid.innerHTML = '';
-        
-        if (this.currentSearch) {
-            this.searchAnime();
-        } else {
-            this.loadTopAnime();
-        }
+    mapStatus(status) {
+        const map = {
+            'airing': 'RELEASING',
+            'complete': 'FINISHED',
+            'upcoming': 'NOT_YET_RELEASED'
+        };
+        return map[status] || null;
     }
 
     async loadTopAnime() {
@@ -64,31 +33,40 @@ class AnimeApp {
         this.hideError();
 
         try {
-            let url = `${this.baseUrl}/top/anime?page=${this.currentPage}&limit=12`;
-            
-            // Agregar filtros si están seleccionados
-            const filters = [];
-            if (this.currentType) filters.push(`type=${this.currentType}`);
-            if (this.currentStatus) filters.push(`status=${this.currentStatus}`);
-            
-            if (filters.length > 0) {
-                url += `&${filters.join('&')}`;
-            }
-
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
+            const query = `
+                query ($page: Int, $perPage: Int, $type: MediaType, $status: MediaStatus) {
+                    Page(page: $page, perPage: $perPage) {
+                        media(type: $type, status: $status, sort: POPULARITY_DESC) {
+                            id
+                            title { romaji english }
+                            coverImage { large }
+                            type
+                            episodes
+                            status
+                            averageScore
+                            description(asHtml: false)
+                        }
+                    }
                 }
+            `;
+
+            const variables = {
+                page: this.currentPage,
+                perPage: 12,
+                type: this.mapType(this.currentType),
+                status: this.mapStatus(this.currentStatus)
+            };
+
+            const response = await fetch(this.baseUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ query, variables })
             });
-            
-            if (!response.ok) {
-                throw new Error('Error en la respuesta de la API');
-            }
-            
+
+            if (!response.ok) throw new Error('Error en la respuesta de la API');
+
             const data = await response.json();
-            this.displayAnime(data.data);
-            
+            this.displayAnime(data.data.Page.media);
         } catch (error) {
             console.error('Error:', error);
             this.showError();
@@ -102,26 +80,41 @@ class AnimeApp {
         this.hideError();
 
         try {
-            let url = `${this.baseUrl}/anime?q=${encodeURIComponent(this.currentSearch)}&page=${this.currentPage}&limit=12`;
-            
-            // Agregar filtros si están seleccionados
-            const filters = [];
-            if (this.currentType) filters.push(`type=${this.currentType}`);
-            if (this.currentStatus) filters.push(`status=${this.currentStatus}`);
-            
-            if (filters.length > 0) {
-                url += `&${filters.join('&')}`;
-            }
+            const query = `
+                query ($search: String, $page: Int, $perPage: Int, $type: MediaType, $status: MediaStatus) {
+                    Page(page: $page, perPage: $perPage) {
+                        media(search: $search, type: $type, status: $status, sort: SEARCH_MATCH) {
+                            id
+                            title { romaji english }
+                            coverImage { large }
+                            type
+                            episodes
+                            status
+                            averageScore
+                            description(asHtml: false)
+                        }
+                    }
+                }
+            `;
 
-            const response = await fetch(url);
-            
-            if (!response.ok) {
-                throw new Error('Error en la respuesta de la API');
-            }
-            
+            const variables = {
+                search: this.currentSearch,
+                page: this.currentPage,
+                perPage: 12,
+                type: this.mapType(this.currentType),
+                status: this.mapStatus(this.currentStatus)
+            };
+
+            const response = await fetch(this.baseUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ query, variables })
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta de la API');
+
             const data = await response.json();
-            this.displayAnime(data.data);
-            
+            this.displayAnime(data.data.Page.media);
         } catch (error) {
             console.error('Error:', error);
             this.showError();
@@ -145,21 +138,22 @@ class AnimeApp {
     createAnimeCard(anime) {
         const card = document.createElement('div');
         card.className = 'anime-card';
-        
-        const synopsis = anime.synopsis 
-            ? anime.synopsis.substring(0, 150) + '...' 
+
+        const title = anime.title.english || anime.title.romaji || 'Sin título';
+        const synopsis = anime.description
+            ? anime.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
             : 'Sin descripción disponible';
-        
+
         card.innerHTML = `
-            <img src="${anime.images.jpg.large_image_url}" 
-                 alt="${anime.title}" 
+            <img src="${anime.coverImage.large}" 
+                 alt="${title}" 
                  class="anime-image"
                  onerror="this.src='https://via.placeholder.com/300x400/667eea/white?text=Imagen+No+Disponible'">
             <div class="anime-info">
-                <h3 class="anime-title">${anime.title}</h3>
+                <h3 class="anime-title">${title}</h3>
                 <div class="anime-details">
                     <span>${anime.type || 'N/A'}</span>
-                    <span class="anime-score">⭐ ${anime.score || 'N/A'}</span>
+                    <span class="anime-score">⭐ ${anime.averageScore || 'N/A'}</span>
                 </div>
                 <div class="anime-details">
                     <span>Episodios: ${anime.episodes || 'N/A'}</span>
@@ -169,51 +163,20 @@ class AnimeApp {
             </div>
         `;
 
-        // Agregar evento de click para mostrar más información
         card.addEventListener('click', () => {
-            this.showAnimeDetails(anime);
+            this.showAnimeDetails({ ...anime, _title: title, _synopsis: synopsis });
         });
 
         return card;
     }
 
     showAnimeDetails(anime) {
-        // Aquí podrías implementar un modal con más detalles
-        alert(`Detalles de: ${anime.title}\n\nPuntuación: ${anime.score || 'N/A'}\nEpisodios: ${anime.episodes || 'N/A'}\nEstado: ${anime.status || 'N/A'}\n\n${anime.synopsis || 'Sin descripción'}`);
+        alert(`Detalles de: ${anime._title}\n\nPuntuación: ${anime.averageScore || 'N/A'}\nEpisodios: ${anime.episodes || 'N/A'}\nEstado: ${anime.status || 'N/A'}\n\n${anime._synopsis || 'Sin descripción'}`);
     }
 
-    handleScroll() {
-        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-        
-        if (scrollTop + clientHeight >= scrollHeight - 100) {
-            this.currentPage++;
-            if (this.currentSearch) {
-                this.searchAnime();
-            } else {
-                this.loadTopAnime();
-            }
-        }
-    }
-
-    showLoading() {
-        this.loading.classList.remove('hidden');
-    }
-
-    hideLoading() {
-        this.loading.classList.add('hidden');
-    }
-
-    showError() {
-        this.errorMessage.classList.remove('hidden');
-    }
-
-    hideError() {
-        this.errorMessage.classList.add('hidden');
-    }
+    // ... handleScroll, showLoading, hideLoading, showError, hideError sin cambios ...
 }
 
-// Inicializar la aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     new AnimeApp();
 });
-// prueba de actualización
