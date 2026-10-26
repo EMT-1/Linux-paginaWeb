@@ -1,6 +1,6 @@
 class AnimeApp {
     constructor() {
-        this.baseUrl = 'https://api.jikan.moe/v4';
+        this.baseUrl = 'https://graphql.anilist.co';
         this.currentPage = 1;
         this.currentSearch = '';
         this.currentType = '';
